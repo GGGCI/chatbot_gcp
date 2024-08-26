@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <style>
+        #textInput {
+            border: 2px solid black;
+            border-bottom: 3px solid aqua;
+        }
+
+        .userText {
+            color: white;
+            font-family: monospace;
+            font-size: 17px;
+            text-align: right;
+            line-height: 30px;
+        }
+
+        .userText span {
+            background-color: #009688;
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .botText {
+            color: white;
+            font-family: monospace;
+            font-size: 17px;
+            text-align: left;
+            line-height: 30px;
+        }
+
+        .botText span {
+            background-color: #ae312f;
+            padding: 5px;
+            border-radius: 10px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #edeff2;
+            font-family: "Calibri", "Roboto", sans-serif;
+        }
+
+        .chat_window {
+            position: absolute;
+            width: calc(100% - 20px);
+            max-width: 800px;
+            height: 500px;
+            border-radius: 10px;
+            background-color: #fff;
+            left: 50%;
+            top: 50%;
+            transform: translateX(-50%) translateY(-50%);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+            background-color: #fff;
+            overflow: hidden;
+        }
+
+
+        .top_menu {
+            background-color: #fff;
+            width: 100%;
+            padding: 20px 0 15px;
+            box-shadow: 0 1px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .top_menu .buttons {
+            margin: 3px 0 0 20px;
+            position: absolute;
+        }
+
+        .top_menu .buttons .button {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 10px;
+            position: relative;
+        }
+
+        .top_menu .buttons .button.close {
+            background-color: #f5886e;
+        }
+
+        .top_menu .buttons .button.minimize {
+            background-color: #fdbf68;
+        }
+
+        .top_menu .buttons .button.maximize {
+            background-color: #a3d063;
+        }
+
+        .top_menu .title {
+            text-align: center;
+            color: #bcbdc0;
+            font-size: 20px;
+        }
+
+        .messages {
+            position: relative;
+            list-style: none;
+            padding: 20px 10px 0 10px;
+            margin: 0;
+            height: 347px;
+            overflow: scroll;
+        }
+
+        .messages .message {
+            clear: both;
+            overflow: hidden;
+            margin-bottom: 20px;
+            transition: all 0.5s linear;
+            opacity: 0;
+        }
+
+        .messages .message.left .avatar {
+            background-color: #f5886e;
+            float: right;
+        }
+
+        .messages .message.left .text_wrapper {
+            background-color: #ffe6cb;
+            margin-left: 20px;
+        }
+
+        .messages .message.left .text_wrapper::after,
+        .messages .message.left .text_wrapper::before {
+            right: 100%;
+            border-right-color: #ffe6cb;
+        }
+
+        .messages .message.left .text {
+            color: #c48843;
+            word-wrap: break-word;
+        }
+
+        .messages .message.left .avatar {
+            float: left;
+            width: 50px;
+            height: 50px;
+            background-image: url("{{ url_for('static', filename='image/cat.jpg') }}");
+            background-size: cover;
+            border-radius: 70%;
+            margin-right: 10px;
+        }
+
+        .messages .message.right .text_wrapper {
+            background-color: #c7eafc;
+            margin-right: 20px;
+            float: right;
+        }
+
+        .messages .message.right .text_wrapper::after,
+        .messages .message.right .text_wrapper::before {
+            left: 100%;
+            border-left-color: #c7eafc;
+        }
+
+        .messages .message.right .text {
+            color: #45829b;
+        }
+
+        .messages .message.appeared {
+            opacity: 1;
+        }
+
+        .messages .message .avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .messages .message .text_wrapper {
+            display: inline-block;
+            padding: 20px;
+            border-radius: 6px;
+            width: calc(100% - 85px);
+            min-width: 100px;
+            position: relative;
+        }
+
+        .messages .message .text_wrapper::after,
+        .messages .message .text_wrapper:before {
+            top: 18px;
+            border: solid transparent;
+            content: " ";
+            height: 0;
+            width: 0;
+            position: absolute;
+            pointer-events: none;
+        }
+
+        .messages .message .text_wrapper::after {
+            border-width: 13px;
+            margin-top: 0px;
+        }
+
+        .messages .message .text_wrapper::before {
+            border-width: 15px;
+            margin-top: -2px;
+
+        }
+
+        .messages .message .text_wrapper .text {
+            font-size: 18px;
+            font-weight: 300;
+            word-wrap: break-word;
+        }
+
+        .messages .message .text_wrapper table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .messages .message .text_wrapper table,
+        th,
+        td {
+            border: 1px solid black;
+        }
+
+        .bottom_wrapper {
+            position: relative;
+            width: 100%;
+            background-color: #fff;
+            padding: 20px 20px;
+            position: absolute;
+            bottom: 0;
+        }
+
+        .bottom_wrapper .message_input_wrapper {
+            display: inline-block;
+            height: 50px;
+            border-radius: 25px;
+            border: 1px solid #bcbdc0;
+            width: calc(100% - 160px);
+            position: relative;
+            padding: 0 20px;
+        }
+
+        .bottom_wrapper .message_input_wrapper .message_input {
+            border: none;
+            height: 100%;
+            box-sizing: border-box;
+            width: calc(100% - 40px);
+            position: absolute;
+            outline-width: 0;
+            color: gray;
+        }
+
+        .bottom_wrapper .send_message {
+            width: 140px;
+            height: 50px;
+            display: inline-block;
+            border-radius: 50px;
+            background-color: #a3d063;
+            border: 2px solid #a3d063;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.2s linear;
+            text-align: center;
+            float: right;
+        }
+
+        .bottom_wrapper .send_message:hover {
+            color: #a3d063;
+            background-color: #fff;
+        }
+
+        .bottom_wrapper .send_message .text {
+            font-size: 18px;
+            font-weight: 300;
+            display: inline-block;
+            line-height: 48px;
+        }
+
+        .message_template {
+            display: none;
+        }
+
+        .footer #button {
+            width: 55px;
+            height: 55px;
+            border: #4e919c 12px solid;
+            border-radius: 35px;
+            margin: 0 auto;
+            position: relative;
+            -webkit-transition: all 1s ease;
+            -moz-transition: all 1s ease;
+            -o-transition: all 1s ease;
+            -ms-transition: all 1s ease;
+            transition: all 1s ease;
+        }
+
+        .footer #button:hover {
+            width: 55px;
+            height: 55px;
+            border: #3A3A3A 12px solid;
+            -webkit-transition: all 1s ease;
+            -moz-transition: all 1s ease;
+            -o-transition: all 1s ease;
+            -ms-transition: all 1s ease;
+            transition: all 1s ease;
+            position: relative;
+        }
+
+        .footer {
+            bottom: 0;
+            left: 0;
+            position: fixed;
+            width: 100%;
+            height: 2em;
+            overflow: hidden;
+            margin: 0 auto;
+            -webkit-transition: all 1s ease;
+            -moz-transition: all 1s ease;
+            -o-transition: all 1s ease;
+            -ms-transition: all 1s ease;
+            transition: all 1s ease;
+            z-index: 999;
+        }
+
+        .footer:hover {
+            -webkit-transition: all 1s ease;
+            -moz-transition: all 1s ease;
+            -o-transition: all 1s ease;
+            -ms-transition: all 1s ease;
+            transition: all 1s ease;
+            height: 10em;
+        }
+
+        .footer #container {
+            margin-top: 5px;
+            width: 100%;
+            height: 100%;
+            position: relative;
+            top: 0;
+            left: 0;
+            background: #4e919c;
+        }
+
+        .footer #cont {
+            position: relative;
+            top: -45px;
+            right: 190px;
+            width: 150px;
+            height: auto;
+            margin: 0 auto;
+        }
+
+        .footer_center {
+            width: 500px;
+            float: left;
+            text-align: center;
+        }
+
+        .footer h3 {
+            font-family: 'Arial';
+            font-size: 20px;
+            font-weight: 100;
+            margin-top: 70px;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container"
+        style="border: 1px solid black; border-radius: 1px; padding: 25px; background-color: #000e0f; margin: auto; text-align: center;">
+        <p style="font-family: Arial; color: white; font-size: 20px; margin: 0;">
+            <big>Choose Your option</big>
+        </p>
+    </div>
+    <div class="chat_window">
+
+        <div class="top_menu">
+            <div class="title">Information Security Chatbot</div>
+        </div>
+        <ul class="messages"></ul>
+        <div class="bottom_wrapper clearfix">
+            <div class="message_input_wrapper">
+                <input class="message_input" placeholder="Enter your message ..." />
+            </div>
+            <div class="send_message">
+                <div class="icon"></div>
+                <div class="text">Send</div>
+            </div>
+            <!--
+    <button id="refreshBtn" class="btn btn-primary form-control" onclick="location.reload()">Refresh</button>
+    -->
+        </div>
+        <div class="message_template">
+            <li class="message">
+                <div class="avatar"></div>
+                <div class="text_wrapper">
+                    <div class="text"></div>
+                </div>
+            </li>
+        </div>
+        <div class="message_template table">
+            <li class="message">
+                <div class="avatar"></div>
+                <div class="text_wrapper">
+                    <table></table>
+                </div>
+            </li>
+        </div>
+    </div>
+    <!-- <div class="footer">
+    <div id="button"></div>
+    <div id="container">
+        <div id="cont">
+            <div class="footer_center">
+                <h3>It is an AI model. &#169; <a href="https://www.batuhantoker.com/">Batuhan Toker</a> </h3>
+            </div>
+        </div>
+    </div>
+</div> -->
+    <div class="select_buttons" style="text-align: center;">
+        <button class="btn btn-primary" id="button1">Abstract</button>
+        <button class="btn btn-secondary" id="button2">MITRE ATT&CK Table</button>
+        <button class="btn btn-success" id="button3">Security Information</button>
+    </div>
+    </div>
+
+    <script>
+        var a = 1;
+        let button1 = document.getElementById('button1');
+        let button2 = document.getElementById('button2');
+        let button3 = document.getElementById('button3');
+
+
+        button1.addEventListener('click', function () {
+            a = 1;
+        });
+
+        button2.addEventListener('click', function () {
+            a = 2;
+        });
+
+        button3.addEventListener('click', function () {
+            a = 3;
+        });
+
+        // async function sendDataToBackend(action) {
+        //     const url = '/get?action=' + action;
+
+        //     try {
+        //         const response = await fetch(url);
+
+        //         if (!response.ok) {
+        //             throw new Error('Network response was not ok');
+        //         }
+
+        //         const data = await response.json();
+        //         console.log(data);
+        //     } catch (error) {
+        //         console.error('There was a problem with your fetch operation:', error);
+        //     }
+        // }
+
+
+        (function () {
+            var Message;
+            Message = function (arg) {
+                this.text = arg.text, this.message_side = arg.message_side;
+                console.log("text: ", this.text);
+                console.log("message ", this.message_side);
+                this.draw = function (_this) {
+                    return function () {
+                        var $message;
+                        $message = $($('.message_template').clone().html());
+                        // console.log($message);
+                        $message.addClass(_this.message_side).find('.text').html(_this.text);
+                        $('.messages').append($message);
+                        return setTimeout(function () {
+                            return $message.addClass('appeared');
+                        }, 0);
+                    };
+                }(this);
+                return this;
+            };
+            url_Message = function (arg) {
+                this.text = arg.text, this.message_side = arg.message_side;
+                console.log("text_info: ", this.text);
+                console.log("message_info ", this.message_side);
+                this.text = this.text.replace(/'/g, '"');
+                let textObject = JSON.parse(this.text);
+                let url = textObject.url;
+                let content = textObject.content;
+                this.text = "Url: "+url ;
+                this.draw = function (_this) {
+                    return function () {
+                        var $message;
+                        $message = $($('.message_template').clone().html());
+                        console.log("message",$message);
+                        $message.addClass(_this.message_side).find('.text').html(_this.text);
+                        $('.messages').append($message);
+                        return setTimeout(function () {
+                            return $message.addClass('appeared');
+                        }, 0);
+                    };
+                }(this);
+                return this;
+            };
+            content_Message = function (arg) {
+                this.text = arg.text, this.message_side = arg.message_side;
+                console.log("text_info: ", this.text);
+                console.log("message_info ", this.message_side);
+                this.text = this.text.replace(/'/g, '"');
+                let textObject = JSON.parse(this.text);
+                let url = textObject.url;
+                let content = textObject.content;
+                this.text = "Content: "+content ;
+                this.draw = function (_this) {
+                    return function () {
+                        var $message;
+                        $message = $($('.message_template').clone().html());
+                        console.log("message",$message);
+                        $message.addClass(_this.message_side).find('.text').html(_this.text);
+                        $('.messages').append($message);
+                        return setTimeout(function () {
+                            return $message.addClass('appeared');
+                        }, 0);
+                    };
+                }(this);
+                return this;
+            };
+
+            class TableMessage {
+                constructor(arg) {
+                    console.log("arg.text",arg.text);
+                    arg.text = arg.text.replace(/'/g, '"');
+                    console.log("new_arg_text", arg.text);
+                    this.data = JSON.parse(arg.text);
+                    this.message_side = arg.message_side;
+                }
+
+                draw() {
+                    let $message;
+                    $message = $($('.message_template.table').clone().html()); //get table msg
+                    $message.addClass(this.message_side) // add class left or right
+                    // $message.find('.text').html(this.text);
+                    let table = $message.find('table')[0];
+                    this.generateTableHead(table, this.data);
+                    this.generateTableRows(table, this.data);
+
+                    $('.messages').append($message);
+                    return setTimeout(function () {
+                        return $message.addClass('appeared');
+                    }, 0);
+                }
+                generateTableHead(table, data) {
+                    let thead = table.createTHead();
+                    let row = thead.insertRow();
+                    for (let key of Object.keys(data)) {
+                        let th = document.createElement("th");
+                        let text = document.createTextNode(key);
+                        th.appendChild(text);
+                        row.appendChild(th);
+                    }
+                    return thead;
+                }
+                generateTableRows(table, data) {
+                    let tbody = table.createTBody();
+                    const array = this.parseDataToTableData(data);
+                    for (let i = 0; i < array.length; i++) {
+                        let row = tbody.insertRow();
+                        for (let j = 0; j < array[i].length; j++) {
+                            let cell = row.insertCell();
+                            let text = document.createTextNode(array[i][j]);
+                            cell.appendChild(text);
+                        }
+                    }
+                    return tbody;
+                }
+                parseDataToTableData(data) {
+                    const array = [];
+                    for (const values of Object.values(data)) {
+                        for (let i = 0; i < Object.values(values).length; i++) {
+                            const obj = array.at(i) || []
+                            obj.push(Object.values(values)[i])
+                            array[i] = obj;
+                        }
+                    }
+                    return array;
+                }
+            }
+
+            $(function () { //渲染完再執行function
+                var getMessageText, message_side, sendMessage;
+                var messages = document.querySelector('.messages');
+                // console.log("getMessageText", getMessageText);
+                // console.log("message_side", message_side);
+                // console.log("sendMessage", sendMessage);
+                message_side = 'right';
+                getMessageText = function () {
+                    var $message_input;
+                    $message_input = $('.message_input');
+                    // console.log("$message_input", $message_input.val());
+                    return $message_input.val();
+                };
+
+
+                sendMessage = async function (text) {
+                    var $messages, message;
+                    if (text.trim() === '') {
+                        return;
+                    }
+                    $('.message_input').val('');
+                    $messages = $('.messages');
+                    var message_side = 'right';
+
+                    message = new Message({
+                        text: text,
+                        message_side: message_side
+                    });
+
+                    message.draw();
+
+                    try {
+                        const response = await fetch("/get", {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ message: text, a: a })
+                        });
+                        const data = await response.json();
+                        // console.log("data: ", data);
+                        // console.log("data.response: ",data.response);
+                        switch (a) {
+                            case 1:
+                                Message({
+                                    text: data.response,
+                                    message_side: 'left'
+                                }).draw();
+                                break;
+                            case 3:
+                                url_Message({
+                                    text: data.response,
+                                    message_side: 'left'
+                                }).draw();
+                                content_Message({
+                                    text: data.response,
+                                    message_side: 'left'
+                                }).draw();
+                                break;
+                            case 2:
+                                new TableMessage({
+                                    text: data.response,
+                                    message_side: 'left'
+                                }).draw();
+                                break;
+                            default:
+                                break;
+                        }
+                        // var botMessage = new Message({
+                        //     text: data.response,
+                        //     message_side: 'left'
+                        // });
+                        // botMessage.draw();
+
+                        messages.scrollTop = messages.scrollHeight;
+                        $messages.animate({ scrollTop: $messages.prop('scrollHeight') }, 300);
+                    } catch (error) {
+                        console.error('Error:', error);
+                    }
+                };
+
+
+                $('.send_message').click(function (e) {
+                    return sendMessage(getMessageText());
+                });
+                $('.message_input').keyup(function (e) {
+                    if (e.which === 13) {
+                        return sendMessage(getMessageText());
+                    }
+                });
+                // Add "Writing..." message
+                writingMessage = new Message({
+                    text: 'Please ask your question',
+                    message_side: 'left'
+                });
+
+                writingMessage.draw();
+
+                // const jsonString =
+                //     new TableMessage({
+                //         text: jsonString,
+                //         message_side: 'left'
+                //     }).draw();
+
+            });
+        }.call(this));
+
+        // `{
+        //                               "tactic": {
+        //                                 "0": "Initial Access",
+        //                                 "1": "Execution",
+        //                                 "2": "Execution",
+        //                                 "3": "Impact",
+        //                                 "4": "Defense Evasion"
+        //                               },
+        //                               "technique": {
+        //                                 "0": "Phishing",
+        //                                 "1": "Scheduled Task/Job",
+        //                                 "2": "Command and Scripting Interpreter",
+        //                                 "3": "Defacement",
+        //                                 "4": "Indicator Removal"
+        //                               },
+        //                               "TID": {
+        //                                 "0": "T1566",
+        //                                 "1": "T1053",
+        //                                 "2": "T1059",
+        //                                 "3": "T1491",
+        //                                 "4": "T1070"
+        //                               }
+        //                             }`
+
+
+    </script>
+
+
+</body>
+
+</html>
