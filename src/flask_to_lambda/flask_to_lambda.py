@@ -1,7 +1,8 @@
 import sys
 import os
 
-sys.path.append("/home/p1048/code/AWS_Trend_Hackathon/tools")
+base_dir = os.getenv('PROJECT_BASE_PATH', '/default/path/to/project')
+sys.path.append(os.path.join(base_dir,"tools"))
 
 from call_Lambda_function_test_1 import (
     call_Lambda_Summary_GenAI, 

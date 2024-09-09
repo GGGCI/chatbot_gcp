@@ -1,5 +1,7 @@
 from flask import Flask, render_template,jsonify,request
 import subprocess
+import os
+
 app = Flask(__name__)
 @app.route('/')
 def index():
@@ -10,10 +12,12 @@ def get_response():
     data = request.json
     action = data.get('a')
     message = data.get('message')
+    base_dir = os.getenv('PROJECT_BASE_PATH', '/default/path/to/project')
+    script_path = os.path.join(base_dir, 'src/flask_to_lambda/flask_to_lambda.py')
     # print("a: ",type(action) )
     # print("msg: ",message)
     if action == 1:
-        result = subprocess.run(['/usr/bin/python3', '/home/p1048/code/AWS_Trend_Hackathon/src/flask_to_lambda/flask_to_lambda.py', message, 'Summary_GenAI'], capture_output=True, text=True)
+        result = subprocess.run(['/usr/bin/python3', script_path, message, 'Summary_GenAI'], capture_output=True, text=True)
         response = result.stdout
         print("result: ",result)
         if result.returncode == 0 and not result.stderr:
@@ -26,7 +30,7 @@ def get_response():
         print("response: ", response)
         print("error: ", result.stderr)
     elif action == 2:
-        result = subprocess.run(['/usr/bin/python3', '/home/p1048/code/AWS_Trend_Hackathon/src/flask_to_lambda/flask_to_lambda.py', message,'Mitre_attack_GenAI'], capture_output=True, text=True)
+        result = subprocess.run(['/usr/bin/python3', script_path, message,'Mitre_attack_GenAI'], capture_output=True, text=True)
         print("result: ",result)
         response = result.stdout
         print("mitre: ",response)
@@ -39,7 +43,7 @@ def get_response():
         print("response: ", response)
         print("error: ", result.stderr)
     elif action == 3:
-        result = subprocess.run(['/usr/bin/python3', '/home/p1048/code/AWS_Trend_Hackathon/src/flask_to_lambda/flask_to_lambda.py', message, 'Cybersecurity_GenAI'], capture_output=True, text=True)
+        result = subprocess.run(['/usr/bin/python3', script_path, message, 'Cybersecurity_GenAI'], capture_output=True, text=True)
         response = result.stdout
         if result.returncode == 0 and not result.stderr:
             response = result.stdout
