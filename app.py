@@ -14,23 +14,24 @@ def get_response():
     message = data.get('message')
     base_dir = os.getenv('PROJECT_BASE_PATH', '/default/path/to/project')
     script_path = os.path.join(base_dir, 'src/flask_to_lambda/flask_to_lambda.py')
+    print("================",script_path)
     # print("a: ",type(action) )
     # print("msg: ",message)
     if action == 1:
-        result = subprocess.run(['/usr/bin/python3', script_path, message, 'Summary_GenAI'], capture_output=True, text=True)
+        result = subprocess.run(['python3', script_path, message, 'Summary_GenAI'], capture_output=True, text=True)
         response = result.stdout
         print("result: ",result)
         if result.returncode == 0 and not result.stderr:
             response = result.stdout
         else:
-            response = "GCI"
+            response = "program error"
         if response == "":
             response = "LLM judgment error"
         # print("result",result)
         print("response: ", response)
         print("error: ", result.stderr)
     elif action == 2:
-        result = subprocess.run(['/usr/bin/python3', script_path, message,'Mitre_attack_GenAI'], capture_output=True, text=True)
+        result = subprocess.run(['python3', script_path, message,'Mitre_attack_GenAI'], capture_output=True, text=True)
         print("result: ",result)
         response = result.stdout
         print("mitre: ",response)
@@ -43,7 +44,7 @@ def get_response():
         print("response: ", response)
         print("error: ", result.stderr)
     elif action == 3:
-        result = subprocess.run(['/usr/bin/python3', script_path, message, 'Cybersecurity_GenAI'], capture_output=True, text=True)
+        result = subprocess.run(['python3', script_path, message, 'Cybersecurity_GenAI'], capture_output=True, text=True)
         response = result.stdout
         if result.returncode == 0 and not result.stderr:
             response = result.stdout
