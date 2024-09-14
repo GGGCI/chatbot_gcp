@@ -1,1 +1,1 @@
-{"tactic":{"0":"Privilege Escalation","1":"Command and Control","2":"Initial Access","3":"Exfiltration","4":"Impact","5":"Persistence"},"technique":{"0":"Account Manipulation","1":"Web Service","2":"Phishing","3":"Exfiltration Over Web Service","4":"Data Manipulation","5":"Account Manipulation"},"TID":{"0":"T1098","1":"T1102","2":"T1566","3":"T1567","4":"T1565","5":"T1098"}}
+{"tactic":{"0":"Impact"},"technique":{"0":"Disk Wipe"},"TID":{"0":"T1561"}}
